@@ -1,18 +1,24 @@
-# The main entry point of your workflow.
-# After configuring, running snakemake -n in a clone of this repository should successfully execute a dry-run of the workflow.
+## Snakefile for analyses into the imputation and phasing of low cov sequencing data in Anopheles gambiae
+import pandas as pd
+configfile: "config/config.yaml"
 
+#chroms = ['2L', '2R', '3L', '3R', 'X']
+chroms = ['2L', 'X']
 
-report: "report/workflow.rst"
+metadata = pd.read_csv("resources/samples.meta.txt", sep="\t")
 
-# Allow users to fix the underlying OS via singularity.
-singularity: "docker://continuumio/miniconda3"
-
+lowCovMeta = pd.read_csv("config/GhanaLowCov.metadata.tsv", sep="\t")
+samples = lowCovMeta['sample']
 
 rule all:
     input:
         # The first rule should define the default target files
         # Subsequent target rules can be specified below. They should start with all_*.
+        expand("resources/ag1000g_WestAfrica_col_{chrom}.vcf.gz", chrom=chroms),
+       # expand("results/vcfs/{sample}.calls.vcf", sample=samples),
+        expand("resources/alignments/{sample}.bam.bai", sample=samples)
 
 
-include: "rules/common.smk"
-include: "rules/other.smk"
+
+include: "rules/prep.smk"
+include: "rules/impute.smk"
