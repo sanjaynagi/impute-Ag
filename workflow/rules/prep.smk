@@ -57,6 +57,24 @@ rule indexBams:
         "samtools index {input} {output} 2> {log}"
 
 
+
+
+"""
+extract variable sites from hap panel 
+bcftools view -G -m 2 -M 2 -v snps ag1000g_WestAfrica_col_X.vcf.gz -Oz -o ag1000g_WestAfrica_col_X.sites.vcf.gz
+bcftools index ag1000g_WestAfrica_col_2L.sites.vcf.gz
+
+bcftools query -f'%CHROM\t%POS\t%REF,%ALT\n' ag1000g_WestAfrica_col_X.sites.vcf.gz | bgzip -c > ag1000g_WestAfrica_col_X.sites.tsv.gz
+tabix -s1 -b2 -e2 ag1000g_WestAfrica_col_X.sites.tsv.gz
+
+"""
+
+
+
+
+
+
+
 rule lowCovGenotypeLikelihoods:
     """
     Get pileup of reads at target loci and pipe output to bcftoolsCall
@@ -64,19 +82,18 @@ rule lowCovGenotypeLikelihoods:
     input:
         bam = "resources/alignments/{sample}.bam",
         index = "resources/alignments/{sample}.bam.bai",
+        vcf = "ag1000g_WestAfrica_col_{chrom}.sites.vcf.gz",
+        tsv = "ag1000g_WestAfrica_col_{chrom}.sites.tsv.gz",
         ref = lambda wildcards: config['ref'],
     output:
-        calls = "results/vcfs/{sample}.calls.vcf"
+        calls = "results/vcfs/{sample}.calls.{chrom}.vcf"
     log:
-        mpileup = "logs/mpileup/{sample}.log",
-        call = "logs/bcftools_call/{sample}.log"
-    params:
-        regions = "haplptype_ref_sites_vcf", #*************
-        depth = 2000
+        mpileup = "logs/mpileup/{sample}_{chrom}.log",
+        call = "logs/bcftools_call/{sample}_{chrom}.log"
     shell:
         """
-        bcftools mpileup -Ou -f {params.ref} -I -E -R {params.regions} -a 'FORMAT/DP' -T {params.regions} {input.bam} 2> {log.mpileup} |
-        bcftools call -Aim -C alleles -T {params.regions} -Ou 2> {log.call} | bcftools sort -Oz -o {output.calls} 2> {log.call}
+        bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r {chrom} {input.bam} 2> {log.mpileup} |
+        bcftools call -Aim -C alleles -T {input.tsv} -Ou 2> {log.call} | bcftools sort -Oz -o {output.calls} 2> {log.call}
         """
 
 
