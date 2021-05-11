@@ -8,15 +8,17 @@ chroms = ['2L', 'X']
 metadata = pd.read_csv("resources/samples.meta.txt", sep="\t")
 
 lowCovMeta = pd.read_csv("config/GhanaLowCov.metadata.tsv", sep="\t")
-samples = lowCovMeta['sample']
+bool_ = lowCovMeta['Site'].isin(['Asokwa', 'Bantama-Kumasi', 'Manso-Nkwanta'])
+samples = lowCovMeta['sample'][~bool_][:10]
 
 rule all:
     input:
         # The first rule should define the default target files
         # Subsequent target rules can be specified below. They should start with all_*.
-        expand("resources/ag1000g_WestAfrica_col_{chrom}.vcf.gz", chrom=chroms),
-       # expand("results/vcfs/{sample}.calls.vcf", sample=samples),
-        expand("resources/alignments/{sample}.bam.bai", sample=samples)
+       # expand("resources/ag1000g_WestAfrica_col_{chrom}.vcf.gz", chrom=chroms),
+        expand("resources/alignments/{sample}.bam.bai", sample=samples),
+	expand("results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi", sample=samples, chrom=chroms),
+	expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms)
 
 
 

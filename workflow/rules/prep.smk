@@ -82,23 +82,46 @@ rule lowCovGenotypeLikelihoods:
     input:
         bam = "resources/alignments/{sample}.bam",
         index = "resources/alignments/{sample}.bam.bai",
-        vcf = "ag1000g_WestAfrica_col_{chrom}.sites.vcf.gz",
-        tsv = "ag1000g_WestAfrica_col_{chrom}.sites.tsv.gz",
+        vcf = "resources/ag1000g_WestAfrica_col_{chrom}.sites.vcf.gz",
+        tsv = "resources/ag1000g_WestAfrica_col_{chrom}.sites.tsv.gz",
         ref = lambda wildcards: config['ref'],
     output:
-        calls = "results/vcfs/{sample}.calls.{chrom}.vcf"
+        calls = "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
     log:
         mpileup = "logs/mpileup/{sample}_{chrom}.log",
         call = "logs/bcftools_call/{sample}_{chrom}.log"
     shell:
         """
-        bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r {chrom} {input.bam} 2> {log.mpileup} |
+        bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r {wildcards.chrom} {input.bam} 2> {log.mpileup} |
         bcftools call -Aim -C alleles -T {input.tsv} -Ou 2> {log.call} | bcftools sort -Oz -o {output.calls} 2> {log.call}
         """
 
 
 
+rule indexVCFs:
+     input:
+        "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
+     output:
+        "results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi"
+     log:
+        "logs/indexVCFs/{sample}_{chrom}.log"
+     shell:
+        "bcftools index {input} 2> {log}"
 
+
+
+
+rule mergeVCFs:
+     input:
+        expand("results/vcfs/{sample}.calls.{{chrom}}.vcf", sample=samples)
+     output:
+        "results/vcfs/merged_calls.{chrom}.vcf.gz"
+     log:
+        "logs/mergeVCFs/{chrom}.log"
+     params:
+        list = "resources/vcf.{chrom}.list"
+     shell:
+        "bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l {params.list} 2> {log}"
 
 
 
