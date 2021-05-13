@@ -84,7 +84,7 @@ rule lowCovGenotypeLikelihoods:
         index = "resources/alignments/{sample}.bam.bai",
         vcf = "resources/ag1000g_WestAfrica_col_{chrom}.sites.vcf.gz",
         tsv = "resources/ag1000g_WestAfrica_col_{chrom}.sites.tsv.gz",
-        ref = lambda wildcards: config['ref'],
+        ref = config['ref'],
     output:
         calls = "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
     log:
@@ -109,8 +109,6 @@ rule indexVCFs:
         "bcftools index {input} 2> {log}"
 
 
-
-
 rule mergeVCFs:
      input:
         expand("results/vcfs/{sample}.calls.{{chrom}}.vcf", sample=samples)
@@ -122,17 +120,4 @@ rule mergeVCFs:
         list = "resources/vcf.{chrom}.list"
      shell:
         "bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l {params.list} 2> {log}"
-
-
-
-
-
-
-
-
-
-# rule mergeVCFs:
-
-
-
 

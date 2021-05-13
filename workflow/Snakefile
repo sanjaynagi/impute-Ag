@@ -1,5 +1,6 @@
 ## Snakefile for analyses into the imputation and phasing of low cov sequencing data in Anopheles gambiae
 import pandas as pd
+import numpy as np
 configfile: "config/config.yaml"
 
 #chroms = ['2L', '2R', '3L', '3R', 'X']
@@ -16,9 +17,10 @@ rule all:
         # The first rule should define the default target files
         # Subsequent target rules can be specified below. They should start with all_*.
        # expand("resources/ag1000g_WestAfrica_col_{chrom}.vcf.gz", chrom=chroms),
-        expand("resources/alignments/{sample}.bam.bai", sample=samples),
-	expand("results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi", sample=samples, chrom=chroms),
-	expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms)
+   #     expand("resources/alignments/{sample}.bam.bai", sample=samples),
+        #expand("results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi", sample=samples, chrom=chroms),
+        #expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms),
+        expand("resources/chunks.{chrom}.txt", chrom=chroms)
 
 
 
