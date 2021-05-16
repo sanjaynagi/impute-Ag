@@ -5,12 +5,14 @@ configfile: "config/config.yaml"
 
 #chroms = ['2L', '2R', '3L', '3R', 'X']
 chroms = ['2L', 'X']
+coechroms = ['2L']
 
 metadata = pd.read_csv("resources/samples.meta.txt", sep="\t")
 
 lowCovMeta = pd.read_csv("config/GhanaLowCov.metadata.tsv", sep="\t")
 bool_ = lowCovMeta['Site'].isin(['Asokwa', 'Bantama-Kumasi', 'Manso-Nkwanta'])
 samples = lowCovMeta['sample'][~bool_][:10]
+allsamples = lowCovMeta['sample'][~bool_][:100]
 
 rule all:
     input:
@@ -20,9 +22,11 @@ rule all:
    #     expand("resources/alignments/{sample}.bam.bai", sample=samples),
         #expand("results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi", sample=samples, chrom=chroms),
         #expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms),
-        expand("resources/chunks.{chrom}.txt", chrom=chroms)
+        expand("resources/chunks.{chrom}.txt", chrom=chroms),
+        expand("results/coevcfs/{sample}.calls.28mb.vcf.gz", sample=allsamples)
 
 
 
 include: "rules/prep.smk"
 include: "rules/impute.smk"
+include: "rules/coesweep.smk"

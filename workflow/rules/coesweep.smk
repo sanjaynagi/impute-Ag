@@ -1,9 +1,9 @@
 
-rule GenomeIndex:
+rule GenomeIndexCOE:
     input:
         ref = lambda wildcards: config['coeref']
     output:
-        idx = touch("resources/reference/.bwa.index.coe")
+        idx = touch("results/.bwa.index.coe")
     shell:
         """
         bwa index {input.ref}

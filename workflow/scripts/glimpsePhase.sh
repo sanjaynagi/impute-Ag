@@ -1,7 +1,7 @@
 #/bin/bash
 
 
-CHROM='2L'
+CHROM=$1
 VCF="results/vcfs/merged_calls.${CHROM}.vcf.gz"
 REF="resources/ag1000g_WestAfrica_col_${CHROM}.vcf.gz"
 MAP="resources/geneticMaps/${CHROM}.gmap"
