@@ -1,4 +1,7 @@
 
+
+
+
 rule GenomeIndexCOE:
     input:
         ref = lambda wildcards: config['coeref']
@@ -15,7 +18,7 @@ rule alignBWA_coe:
     Align with bwa mem, and sorting by coordinate with samtools sort. then index with samtools.  
     """
     input:
-        reads = expand("resources/reads/{{sample}}_{n}.fq.gz", n=[1,2]),
+        reads = expand("resources/reads/DW-{{sample}}_R{n}_001.fastq.gz", n=[1,2]),
         ref = lambda wildcards: config['coeref'],
         idx = "results/.bwa.index.coe"
     output:
@@ -45,8 +48,6 @@ rule indexBams_coe:
 
 
 
-
-
 rule lowCovGenotypeLikelihoods_coe:
     """
     Get pileup of reads at target loci and pipe output to bcftoolsCall
@@ -64,6 +65,6 @@ rule lowCovGenotypeLikelihoods_coe:
         call = "logs/bcftools_call_coe/{sample}.log"
     shell:
         """
-        bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r {wildcards.chrom} {input.bam} 2> {log.mpileup} |
+        bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r 2L {input.bam} 2> {log.mpileup} |
         bcftools call -Aim -C alleles -T {input.tsv} -Ou 2> {log.call} | bcftools sort -Oz -o {output.calls} 2> {log.call}
         """
