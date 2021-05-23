@@ -22,7 +22,7 @@ rule alignBWA_coe:
         ref = lambda wildcards: config['coeref'],
         idx = "results/.bwa.index.coe"
     output:
-        bam = "results/alignments/coe/{sample}.bam"
+        bam = "results/COEalignments/{sample}.bam"
     log:
         align = "logs/align_bwa/{sample}_coe.log",
         sort = "logs/sort/{sample}_coe.log",
@@ -33,14 +33,14 @@ rule alignBWA_coe:
     shell:
         """
         bwa mem -t {threads} {input.ref} {input.reads} -R {params.tag} 2> {log.align} |
-        samtools sort -@{threads} -o {output} 2> {log.sort}
+        samtools sort -@{threads} 2> {log.sort} | samtools view -F 4 -o {output.bam} 2>> {log.sort}
         """
 
 rule indexBams_coe:
      input:
-        "results/alignments/coe/{sample}.bam"
+        "results/COEalignments/{sample}.bam"
      output:
-        "results/alignments/coe/{sample}.bam.bai"
+        "results/COEalignments/{sample}.bam.bai"
      log:
         "logs/index_bams_coe/{sample}.log"
      shell:
@@ -53,7 +53,7 @@ rule lowCovGenotypeLikelihoods_coe:
     Get pileup of reads at target loci and pipe output to bcftoolsCall
     """
     input:
-        bam = "results/alignments/coe/{sample}.bam",
+        bam = "results/COEalignments/{sample}.bam",
         index = "results/alignments/coe/{sample}.bam.bai",
         vcf = "resources/ag1000g_WestAfrica_col_2L.sites.vcf.gz",
         tsv = "resources/ag1000g_WestAfrica_col_2L.sites.tsv.gz",
