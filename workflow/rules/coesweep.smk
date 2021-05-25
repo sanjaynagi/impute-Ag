@@ -48,6 +48,82 @@ rule indexBams_coe:
 
 
 
+
+
+rule mpileupIR:
+    """
+    Get allele count tables of variants of choice (specified in config file ("IRmutations.tsv"))
+    """
+    input:
+        bam="results/alignments/{sample}.bam",
+        index="results/alignments/{sample}.bam.bai",
+    output:
+        "results/allele_balance/counts/{sample}_{mut}_allele_counts.tsv",
+    conda:
+        "../envs/variants.yaml"
+    priority: 10
+    log:
+        "logs/mpileupIR/{sample}_{mut}.log",
+    params:
+        region=lambda wildcards: mutationData[
+            mutationData.Name == wildcards.mut
+        ].Location.tolist(),
+        ref=config["ref"]["genome"],
+        basedir=workflow.basedir,
+    shell:
+        """
+        samtools mpileup {input.bam} -r {params.region} -f {params.ref} 2> {log} | 
+        python2 {params.basedir}/scripts/BaseParser.py > {output} 2>> {log}
+        """
+
+
+rule AlleleBalanceIR:
+    """
+    R script to take allele count tables from mpileupIR rule and output .xlsx report for all mutations of interest
+    """
+    input:
+        counts=expand(
+            "results/allele_balance/counts/{sample}_{mut}_allele_counts.tsv",
+            sample=coesamples,
+            mut=mutationData.Name,
+        ),
+        samples=coesamples,
+        mutations="resources/coemutations.tsv",
+    output:
+        expand(
+            "results/allele_balance/csvs/{mut}_allele_balance.csv",
+            mut=mutationData.Name,
+        ),
+        allele_balance="results/allele_balance/allele_balance.xlsx",
+        mean_allele_balance="results/allele_balance/mean_allele_balance.xlsx",
+    conda:
+        "../envs/diffexp.yaml"
+    priority: 10
+    log:
+        "logs/AlleleBalanceIR.log",
+    script:
+        "../scripts/MutAlleleBalance.R"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 rule lowCovGenotypeLikelihoods_coe:
     """
     Get pileup of reads at target loci and pipe output to bcftoolsCall

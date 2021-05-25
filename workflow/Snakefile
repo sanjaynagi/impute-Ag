@@ -18,6 +18,9 @@ sp_df = lowCovMeta[~bool_]
 gamb_df = sp_df[sp_df['species'] == "S"]
 coesamples = gamb_df['sample']
 
+# IR allele balance mutations file
+mutationData = pd.read_csv("resources/coemutations.tsv", sep="\t")
+
 rule all:
     input:
         # The first rule should define the default target files
@@ -28,7 +31,9 @@ rule all:
         #expand("results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi", sample=samples, chrom=chroms),
         #expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms),
         expand("resources/chunks.{chrom}.txt", chrom=chroms),
-        expand("results/COEalignments/{sample}.bam.bai", sample=coesamples)
+        expand("results/COEalignments/{sample}.bam.bai", sample=coesamples),
+        "results/allele_balance/allele_balance.xlsx",
+
 
 
 
