@@ -12,7 +12,11 @@ metadata = pd.read_csv("resources/samples.meta.txt", sep="\t")
 lowCovMeta = pd.read_csv("config/GhanaLowCov.metadata.tsv", sep="\t")
 bool_ = lowCovMeta['Site'].isin(['Asokwa', 'Bantama-Kumasi', 'Manso-Nkwanta'])
 samples = lowCovMeta['sample'][~bool_][:10]
-allsamples = lowCovMeta['sample'][~bool_][:100]
+
+## coe 
+sp_df = lowCovMeta[~bool_]
+gamb_df = sp_df[sp_df['species'] == "S"]
+coesamples = gamb_df['sample']
 
 rule all:
     input:
@@ -24,7 +28,7 @@ rule all:
         #expand("results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi", sample=samples, chrom=chroms),
         #expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms),
         expand("resources/chunks.{chrom}.txt", chrom=chroms),
-#        expand("results/coevcfs/{sample}.calls.28mb.vcf.gz", sample=allsamples)
+        expand("results/COEalignments/{sample}.bam.bai", sample=coesamples)
 
 
 

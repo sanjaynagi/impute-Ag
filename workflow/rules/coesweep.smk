@@ -42,7 +42,7 @@ rule indexBams_coe:
      output:
         "results/COEalignments/{sample}.bam.bai"
      log:
-        "logs/index_bams_coe/{sample}.log"
+        "logs/index_COEbams/{sample}.log"
      shell:
         "samtools index {input} {output} 2> {log}"
 
@@ -54,7 +54,7 @@ rule lowCovGenotypeLikelihoods_coe:
     """
     input:
         bam = "results/COEalignments/{sample}.bam",
-        index = "results/alignments/coe/{sample}.bam.bai",
+        index = "results/COEalignments/{sample}.bam.bai",
         vcf = "resources/ag1000g_WestAfrica_col_2L.sites.vcf.gz",
         tsv = "resources/ag1000g_WestAfrica_col_2L.sites.tsv.gz",
         ref = config['coeref'],
@@ -65,6 +65,6 @@ rule lowCovGenotypeLikelihoods_coe:
         call = "logs/bcftools_call_coe/{sample}.log"
     shell:
         """
-        bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r 2L {input.bam} 2> {log.mpileup} |
+        bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} {input.bam} 2> {log.mpileup} |
         bcftools call -Aim -C alleles -T {input.tsv} -Ou 2> {log.call} | bcftools sort -Oz -o {output.calls} 2> {log.call}
         """
