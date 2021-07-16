@@ -1,5 +1,8 @@
 
-rule referencePanel:
+rule subsetReferencePanel:
+    """
+    Subset the reference panel to a specific set of samples. Only necessary to save space - runtime should be lower with larger Hap Panel
+    """
     input:
         vcf = "/home/sanj/ag1000g/data/ag1000g.phase2.ar1.pass.biallelic.{chrom}.vcf.gz"
     output:
@@ -14,8 +17,11 @@ rule referencePanel:
 
 
 rule GenomeIndex:
+    """
+    Index the reference genome with BWA
+    """
     input:
-        ref = lambda wildcards: config['ref']
+        ref = config['ref']
     output:
         idx = touch("resources/reference/.bwa.index")
     shell:
@@ -52,28 +58,61 @@ rule indexBams:
      output:
         "results/alignments/{sample}.bam.bai"
      log:
-        "logs/index_bams/{sample}.log"
+        "logs/indexBams/{sample}.log"
      shell:
         "samtools index {input} {output} 2> {log}"
 
+rule extractSites:
+    """
+    Extract variable sites from the Haplotype reference panel
+    """
+    input:
+        "resources/ag1000g_phase2.{chrom}.vcf.gz"
+    output:
+        "resources/ag1000g_phase2.{chrom}.sites.vcf.gz"
+    log:
+        "logs/extractSites.{chrom}.log"
+    shell:
+        """
+        bcftools view -G -m 2 -M 2 -v snps {input} -0z -o {output} 2> {log}
+        """
 
+rule indexSites:
+     input:
+        vcf="resources/ag1000g_phase2.{chrom}.sites.vcf.gz"
+     output:
+        csi="resources/ag1000g_phase2.{chrom}.sites.vcf.gz.csi"
+     log:
+        "logs/indexSites.{chrom}.log"
+     shell:
+        "bcftools index {input} 2> {log}"
 
+rule sitesTable:
+    """
+    Convert sites VCF to a TSV
+    """
+    input:
+        vcf="resources/ag1000g_phase2.{chrom}.sites.vcf.gz"
+    output:
+        tsv="resources/ag1000g_phase2.{chrom}.sites.tsv.gz"
+    log:
+        "logs/sitesTable.{chrom}.log"
+    shell:
+        """
+        bcftools query -f'%CHROM\t%POS\t%REF,%ALT\n' {input.vcf} | bgzip -c > {output.tsv} 2> {log}
+        """
 
-"""
-extract variable sites from hap panel 
-bcftools view -G -m 2 -M 2 -v snps ag1000g_WestAfrica_col_X.vcf.gz -Oz -o ag1000g_WestAfrica_col_X.sites.vcf.gz
-bcftools index ag1000g_WestAfrica_col_2L.sites.vcf.gz
-
-bcftools query -f'%CHROM\t%POS\t%REF,%ALT\n' ag1000g_WestAfrica_col_X.sites.vcf.gz | bgzip -c > ag1000g_WestAfrica_col_X.sites.tsv.gz
-tabix -s1 -b2 -e2 ag1000g_WestAfrica_col_X.sites.tsv.gz
-
-"""
-
-
-
-
-
-
+rule tabixTable:
+    input:
+        tsv="resources/ag1000g_phase2.{chrom}.sites.tsv.gz"
+    output:
+        tbi="resources/ag1000g_phase2.{chrom}.sites.tsv.gz.tbi",
+    log:
+        "logs/tabixTable.{chrom}.log"
+    shell:
+        """
+        tabix -s1 -b2 -e2 {output.tsv} 2> {log}
+        """
 
 rule lowCovGenotypeLikelihoods:
     """
@@ -82,20 +121,19 @@ rule lowCovGenotypeLikelihoods:
     input:
         bam = "results/alignments/{sample}.bam",
         index = "results/alignments/{sample}.bam.bai",
-        vcf = "resources/ag1000g_WestAfrica_col_{chrom}.sites.vcf.gz",
-        tsv = "resources/ag1000g_WestAfrica_col_{chrom}.sites.tsv.gz",
+        vcf = "resources/ag1000g_phase2.{chrom}.sites.vcf.gz",
+        tsv = "resources/ag1000g_phase2.{chrom}.sites.tsv.gz",
         ref = config['ref'],
     output:
         calls = "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
     log:
         mpileup = "logs/mpileup/{sample}_{chrom}.log",
-        call = "logs/bcftools_call/{sample}_{chrom}.log"
+        call = "logs/bcftoolsCall/{sample}_{chrom}.log"
     shell:
         """
         bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r {wildcards.chrom} {input.bam} 2> {log.mpileup} |
         bcftools call -Aim -C alleles -T {input.tsv} -Ou 2> {log.call} | bcftools sort -Oz -o {output.calls} 2> {log.call}
         """
-
 
 
 rule indexVCFs:
@@ -121,39 +159,3 @@ rule mergeVCFs:
      shell:
         "bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l {params.list} 2> {log}"
 
-
-#### QC ####
-
-
-rule BamStats:
-    """
-    QC alignment statistics
-    """
-    input:
-        bam = "results/alignments/{sample}.bam",
-        idx = "results/alignments/{sample}.bam.bai"
-    output:
-        stats = "results/alignments/bamStats/{sample}.flagstat"
-    log:
-        "logs/BamStats/{sample}.log"
-    wrapper:
-        "0.70.0/bio/samtools/flagstat"
-
-rule Coverage:
-    """
-    Calculate coverage with mosdepth
-    """
-    input:
-        bam = "results/alignments/{sample}.bam",
-        idx = "results/alignments/{sample}.bam.bai"
-    output:
-        "results/alignments/coverage/{sample}.mosdepth.summary.txt"
-    log:
-        "logs/Coverage/{sample}.log"
-    conda:
-        "../envs/depth.yaml"
-    params:
-        prefix = lambda w, output: output[0].split(os.extsep)[0],
-        windowsize = 300
-    threads:4
-    shell: "mosdepth --threads {threads} --fast-mode --by {params.windowsize} --no-per-base {params.prefix} {input.bam}"

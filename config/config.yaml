@@ -4,4 +4,3 @@
 samples: "config/samples.tsv"
 
 ref: "resources/reference/Anopheles-gambiae-PEST_CHROMOSOMES_AgamP4.fa"
-coeref: "resources/reference/An.gambiae_2L28mb.fa"

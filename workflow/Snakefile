@@ -5,18 +5,12 @@ configfile: "config/config.yaml"
 
 #chroms = ['2L', '2R', '3L', '3R', 'X']
 chroms = ['2L', 'X']
-coechroms = ['2L']
 
 metadata = pd.read_csv("resources/samples.meta.txt", sep="\t")
 
 lowCovMeta = pd.read_csv("config/GhanaLowCov.metadata.tsv", sep="\t")
 bool_ = lowCovMeta['Site'].isin(['Asokwa', 'Bantama-Kumasi', 'Manso-Nkwanta'])
 samples = lowCovMeta['sample'][~bool_][:10]
-
-## coe 
-sp_df = lowCovMeta[~bool_]
-gamb_df = sp_df[sp_df['species'] == "S"]
-coesamples = gamb_df['sample']
 
 # IR allele balance mutations file
 mutationData = pd.read_csv("resources/coemutations.tsv", sep="\t")
@@ -26,17 +20,12 @@ rule all:
         # The first rule should define the default target files
         # Subsequent target rules can be specified below. They should start with all_*.
        # expand("resources/ag1000g_WestAfrica_col_{chrom}.vcf.gz", chrom=chroms),
-        expand("results/COEalignments/{sample}.bam.bai", sample=samples),
+        expand("results/alignments/{sample}.bam.bai", sample=samples),
         expand("results/alignments/coverage/{sample}.mosdepth.summary.txt", sample=samples),
         #expand("results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi", sample=samples, chrom=chroms),
         #expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms),
-        expand("resources/chunks.{chrom}.txt", chrom=chroms),
-        expand("results/COEalignments/{sample}.bam.bai", sample=coesamples),
-        "results/allele_balance/allele_balance.xlsx",
-
-
 
 
 include: "rules/prep.smk"
 include: "rules/impute.smk"
-include: "rules/coesweep.smk"
+#include: "rules/coesweep.smk"

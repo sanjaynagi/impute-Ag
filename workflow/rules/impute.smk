@@ -1,8 +1,11 @@
 # An example collection of Snakemake rules imported in the main Snakefile.
 
 rule glimpseChunk:
+    """
+    Divide the genome into chunks
+    """
     input:
-        sites = "resources/ag1000g_WestAfrica_col_{chrom}.sites.vcf.gz",
+        sites = "resources/ag1000g_phase2.{chrom}.sites.vcf.gz",
     output:
         chunks = "resources/chunks.{chrom}.txt"
     log:
@@ -10,55 +13,38 @@ rule glimpseChunk:
     shell:
         """
         workflow/scripts/GLIMPSE/static_bins/GLIMPSE_chunk_static --input {input.sites} --region {wildcards.chrom} --window-size 2000000 \
-        --buffer-size 200000 --output {output} 2> {log}
+        --buffer-size 200000 --output {output.chunks} 2> {log}
         """
 
-
-rule glimpseImpute:
+rule glimpseImputeLigate:
+    """
+    Run imputation and phasing algorithm
+    """
     input:
         vcf = "results/vcfs/merged_calls.{chrom}.vcf.gz",
-        HapPanel = "resources/ag1000g_WestAfrica_col_{chrom}.vcf.gz",
+        HapPanel = "resources/ag1000g_phase2.{chrom}.vcf.gz",
         genMap = "resources/geneticMaps/{chrom}.gmap",
         chunks = "resources/chunks.{chrom}.txt"
     output:
-        vcf = expand("results/imputedVCFs/{{chrom}}_{i}.vcf", i=lambda wildcards: config['chunks'][wildcards.chrom])
+        vcf = "results/vcfs/imputed.{chrom}.vcf.gz"
     log:
-        "logs/glimpseImpute/{chrom}.log"
+        "logs/glimpseImputeLigate/{chrom}.log"
     shell:
         """
-        while IFS="" read -r LINE || [ -n "$LINE" ];
-        do
-        printf -v ID "%02d" $(echo $LINE | cut -d" " -f1)
-        IRG=$(echo $LINE | cut -d" " -f3)
-        ORG=$(echo $LINE | cut -d" " -f4)
-
-        workflow/scripts/GLIMPSE/static_bins/GLIMPSE_phase_static --input {input.vcf} --reference {input.HapPanel} --map {input.genMap} --input-region ${IRG} \ 
-        --output-region ${ORG} --output {output.vcf}
-
-        bcftools index {output.vcf} 
-        done < {input.chunks}
+        workflow/scripts/glimpsePhase.sh {wildcards.chrom} {input.vcf} {input.HapPanel} {input.genMap} {input.chunks} 2> {log}
         """
 
- #rule glimpseLigate:
-  #   input:
-#
- #    output:
-  #   log:
-   #  params:
-    # shell:
-     #    """
-   #      GLIMPSE_ligate --input ${LST} --output $OUT
-  #       """
-
-# rule glimpsePhase:
-#     input:
-#     output:
-#     log:
-#     params:
-#     shell:
-#         """
-#         GLIMPSE_sample --input ${VCF} --solve --output ${OUT}
-#         """
+rule glimpsePhase:
+    input:
+        vcf = "results/vcfs/imputed.{chrom}.vcf.gz"
+    output:
+        phasedVCF = "results/vcfs/phased.{chrom}.vcf.gz"
+    log:
+        "logs/glimpseHaplotypes.{chrom}.log"
+    shell:
+        """
+        workflow/scripts/GLIMPSE/static_bins/GLIMPSE_phase_static --input {input.vcf} --solve --output {output.phasedVCF} 2> {log}
+        """
 
 
 # rule glimpseConcordance:
