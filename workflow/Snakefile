@@ -26,6 +26,6 @@ rule all:
         #expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms),
 
 
-include: "rules/prep.smk"
+include: "rules/prepHapPanel.smk"
+include: "rules/prepLowCovSamples.smk"
 include: "rules/impute.smk"
-#include: "rules/coesweep.smk"
