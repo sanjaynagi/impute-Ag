@@ -5,12 +5,6 @@
 
 This repo is for initial investigations into the use of imputation and phasing for low coverage sequecning data, in Anopheles gambiae, using Ag1000g and VObs data as haplotype reference panels, and the program GLIMPSE, which is from the authors of SHAPEIT and uses Richard Durbins PBWT to rapidly impute and phase SNP markers.
 
-To use GLIMPSE, i need the following:
-
-- low cov sequencing data in BAM format? focus on biallelic SNPs
-- W.African samples - VCF format, phased. 
-- 
-
 
 ## Authors
 
