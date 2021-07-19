@@ -1,4 +1,4 @@
-# Snakemake workflow: impute_Ag
+# impute_Ag
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥5.11.0-brightgreen.svg)](https://snakemake.bitbucket.io)
 [![Build Status](https://travis-ci.org/snakemake-workflows/impute_Ag.svg?branch=master)](https://travis-ci.org/snakemake-workflows/impute_Ag)
