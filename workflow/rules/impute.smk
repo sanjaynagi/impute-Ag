@@ -22,7 +22,7 @@ rule glimpseImputeLigate:
     """
     input:
         vcf = "results/vcfs/merged_calls.{chrom}.vcf.gz",
-        HapPanel = "resources/ag1000g_phase2.{chrom}.vcf.gz",
+        HapPanel = "resources/ag1000g.phase2.{chrom}.vcf.gz",
         genMap = "resources/geneticMaps/{chrom}.gmap",
         chunks = "resources/chunks.{chrom}.txt"
     output:

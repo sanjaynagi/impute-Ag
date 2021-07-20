@@ -1,4 +1,4 @@
-rule GenomeIndex:
+rule genomeIndex:
     """
     Index the reference genome with BWA
     """
@@ -6,9 +6,11 @@ rule GenomeIndex:
         ref = config['ref']
     output:
         idx = touch("resources/reference/.bwa.index")
+    log:
+        "logs/align_bwa/index.log"
     shell:
         """
-        bwa index {input.ref}
+        bwa index {input.ref} 2> {log}
         """
 
 rule alignBWA:
@@ -56,7 +58,7 @@ rule subSampleBam:
     log:
         "logs/subSampleBams/{sample}.log"
     params:
-        reads = 5560000
+        reads = config['subsample']['reads']
     shell:
         """
         FACTOR=$(samtools idxstats {input.bam} | cut -f3 | awk -v COUNT=$2 'BEGIN {total=0} {total += $1} END {print COUNT/total}')
@@ -75,10 +77,10 @@ rule lowCovGenotypeLikelihoods:
     Get pileup of reads at target loci and pipe output to bcftoolsCall
     """
     input:
-        bam = "results/alignments/{sample}.bam",
+        bam = whichBams(),
         index = "results/alignments/{sample}.bam.bai",
-        vcf = "resources/ag1000g_phase2.{chrom}.sites.vcf.gz",
-        tsv = "resources/ag1000g_phase2.{chrom}.sites.tsv.gz",
+        vcf = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz",
+        tsv = "resources/ag1000g.phase2.{chrom}.sites.tsv.gz",
         ref = config['ref'],
     output:
         calls = "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
@@ -88,7 +90,7 @@ rule lowCovGenotypeLikelihoods:
     shell:
         """
         bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r {wildcards.chrom} {input.bam} 2> {log.mpileup} |
-        bcftools call -Aim -C alleles -T {input.tsv} -Ou 2> {log.call} | bcftools sort -Oz -o {output.calls} 2> {log.call}
+        bcftools call -Aim -C alleles -T {input.tsv} -Ou 2> {log.call} | bcftools sort -Oz -o {output.calls} 2>> {log.call}
         """
 
 
@@ -110,8 +112,9 @@ rule mergeVCFs:
         "results/vcfs/merged_calls.{chrom}.vcf.gz"
      log:
         "logs/mergeVCFs/{chrom}.log"
-     params:
-        list = "resources/vcf.{chrom}.list"
      shell:
-        "bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l {params.list} 2> {log}"
+        """
+        find results/vcfs/ -name *calls.{wildcards.chrom}.vcf.gz | sort > results/vcfs/sampleVCF.{wildcards.chrom}.list 2> {log}
+        bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l results/vcfs/sampleVCF.{wildcards.chrom}.list 2>> {log}
+        """
 
