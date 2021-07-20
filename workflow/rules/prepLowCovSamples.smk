@@ -54,22 +54,31 @@ rule subSampleBam:
     input:
         bam = "results/alignments/{sample}.bam"
     output:
-        reducedBam = "results/alignments/downSampled/{sample}.bam"
+        reducedBam = "results/alignments/downSampled/{sample}.bam",
+#	index = "results/alignments/downSampled/{sample}.bam.bai"
     log:
         "logs/subSampleBams/{sample}.log"
     params:
         reads = config['subsample']['reads']
     shell:
         """
-        FACTOR=$(samtools idxstats {input.bam} | cut -f3 | awk -v COUNT=$2 'BEGIN {total=0} {total += $1} END {print COUNT/total}')
+        FACTOR=$(samtools idxstats {input.bam} | cut -f3 | awk -v COUNT={params.reads} 'BEGIN {{total=0}} {{total += $1}} END {{print COUNT/total}}')
 
         if [[ $FACTOR > 1 ]]
         then 
-        echo '[ERROR]: Requested number of reads exceeds total read count in' $1 '-- exiting' && exit 1
+        echo '[ERROR]: Requested number of reads exceeds total read count in' {input.bam}, not downsampling
+	cp {input.bam} {output.reducedBam} && \
+        samtools index {output.reducedBam} {output.reducedBam}.bai 2>> {log}
         fi
+	
+	if [[ $FACTOR < 1 ]]
+	then
+        sambamba view -s $FACTOR -f bam -l 5 {input.bam} > {output.reducedBam} 2> {log} && \
+        samtools index {output.reducedBam} {output.reducedBam}.bai 2>> {log}
+	fi
 
-        sambamba view -s $FACTOR -f bam -l 5 $1 > {output.reducedBam}
         """
+
 
 
 rule lowCovGenotypeLikelihoods:
@@ -78,7 +87,7 @@ rule lowCovGenotypeLikelihoods:
     """
     input:
         bam = whichBams(),
-        index = "results/alignments/{sample}.bam.bai",
+        index = lambda wildcards: whichBams() + ".bai",
         vcf = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz",
         tsv = "resources/ag1000g.phase2.{chrom}.sites.tsv.gz",
         ref = config['ref'],
@@ -107,7 +116,8 @@ rule indexVCFs:
 
 rule mergeVCFs:
      input:
-        expand("results/vcfs/{sample}.calls.{{chrom}}.vcf", sample=samples)
+        expand("results/vcfs/{sample}.calls.{{chrom}}.vcf.gz", sample=samples),
+	expand("results/vcfs/{sample}.calls.{{chrom}}.vcf.gz.csi", sample=samples)
      output:
         "results/vcfs/merged_calls.{chrom}.vcf.gz"
      log:
