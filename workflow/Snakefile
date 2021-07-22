@@ -17,13 +17,10 @@ mutationData = pd.read_csv("resources/coemutations.tsv", sep="\t")
 
 rule all:
     input:
-        # The first rule should define the default target files
-        # Subsequent target rules can be specified below. They should start with all_*.
-       # expand("resources/ag1000g_WestAfrica_col_{chrom}.vcf.gz", chrom=chroms),
-    #    expand("results/alignments/{sample}.bam.bai", sample=samples),
      #   expand("results/alignments/coverage/{sample}.mosdepth.summary.txt", sample=samples),
 #        expand("resources/ag1000g.phase2.{chrom}.sites.tsv.gz.tbi", chrom=chroms)
         expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms),
+        expand("results/vcfs/phased.{chrom}.vcf.gz", chrom=chroms)
 
 include: "rules/common.smk"
 include: "rules/prepHapPanel.smk"

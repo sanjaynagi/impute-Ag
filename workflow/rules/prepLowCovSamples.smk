@@ -67,16 +67,15 @@ rule subSampleBam:
         if [[ $FACTOR > 1 ]]
         then 
         echo '[ERROR]: Requested number of reads exceeds total read count in' {input.bam}, not downsampling
-	cp {input.bam} {output.reducedBam} && \
+        cp {input.bam} {output.reducedBam} && \
         samtools index {output.reducedBam} {output.reducedBam}.bai 2>> {log}
         fi
-	
-	if [[ $FACTOR < 1 ]]
-	then
+    
+        if [[ $FACTOR < 1 ]]
+        then
         sambamba view -s $FACTOR -f bam -l 5 {input.bam} > {output.reducedBam} 2> {log} && \
         samtools index {output.reducedBam} {output.reducedBam}.bai 2>> {log}
-	fi
-
+        fi
         """
 
 
@@ -128,3 +127,12 @@ rule mergeVCFs:
         bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l results/vcfs/sampleVCF.{wildcards.chrom}.list 2>> {log}
         """
 
+rule indexMergedVCFs:
+     input:
+        "results/vcfs/merged_calls.{chrom}.vcf.gz"
+     output:
+        "results/vcfs/merged_calls.{chrom}.vcf.gz.csi"
+     log:
+        "logs/indexMergedVCFs/{chrom}.log"
+     shell:
+        "bcftools index {input} 2> {log}"

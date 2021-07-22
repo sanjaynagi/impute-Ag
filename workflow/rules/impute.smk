@@ -5,7 +5,7 @@ rule glimpseChunk:
     Divide the genome into chunks
     """
     input:
-        sites = "resources/ag1000g_phase2.{chrom}.sites.vcf.gz",
+        sites = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz",
     output:
         chunks = "resources/chunks.{chrom}.txt"
     log:
@@ -22,16 +22,18 @@ rule glimpseImputeLigate:
     """
     input:
         vcf = "results/vcfs/merged_calls.{chrom}.vcf.gz",
-        HapPanel = "resources/ag1000g.phase2.{chrom}.vcf.gz",
+        index = "results/vcfs/merged_calls.{chrom}.vcf.gz.csi",
+        HapPanel = "/home/sanj/ag1000g/data/ag1000g.phase2.ar1.pass/ag1000g.phase2.ar1.pass.{chrom}.vcf.gz",
         genMap = "resources/geneticMaps/{chrom}.gmap",
         chunks = "resources/chunks.{chrom}.txt"
     output:
         vcf = "results/vcfs/imputed.{chrom}.vcf.gz"
     log:
         "logs/glimpseImputeLigate/{chrom}.log"
+    threads: 4
     shell:
         """
-        workflow/scripts/glimpsePhase.sh {wildcards.chrom} {input.vcf} {input.HapPanel} {input.genMap} {input.chunks} 2> {log}
+        workflow/scripts/glimpsePhaseLigate.sh {wildcards.chrom} {input.vcf} {input.HapPanel} {input.genMap} {input.chunks} {threads} 2> {log}
         """
 
 rule glimpsePhase:
@@ -41,9 +43,10 @@ rule glimpsePhase:
         phasedVCF = "results/vcfs/phased.{chrom}.vcf.gz"
     log:
         "logs/glimpseHaplotypes.{chrom}.log"
+    threads: 4
     shell:
         """
-        workflow/scripts/GLIMPSE/static_bins/GLIMPSE_phase_static --input {input.vcf} --solve --output {output.phasedVCF} 2> {log}
+        workflow/scripts/GLIMPSE/static_bins/GLIMPSE_sample_static --input {input.vcf} --solve --threads {threads} --output {output.phasedVCF} 2> {log}
         """
 
 

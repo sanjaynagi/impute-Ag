@@ -3,6 +3,9 @@
 [![Snakemake](https://img.shields.io/badge/snakemake-≥5.11.0-brightgreen.svg)](https://snakemake.bitbucket.io)
 [![Build Status](https://travis-ci.org/snakemake-workflows/impute_Ag.svg?branch=master)](https://travis-ci.org/snakemake-workflows/impute_Ag)
 
+
+![Impute-Ag logo](https://github.com/sanjaynagi/impute-Ag/blob/main/docs/impute_logo.jpg?raw=true)
+
 This repo is for initial investigations into the use of imputation and phasing for low coverage sequecning data, in Anopheles gambiae, using Ag1000g and VObs data as haplotype reference panels, and the program GLIMPSE, which is from the authors of SHAPEIT and uses Richard Durbins PBWT to rapidly impute and phase SNP markers.
 
 
