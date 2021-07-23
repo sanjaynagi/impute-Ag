@@ -4,7 +4,7 @@ import numpy as np
 configfile: "config/config.yaml"
 
 #chroms = ['2L', '2R', '3L', '3R', 'X']
-chroms = ['2L']
+chroms = config['chroms']
 
 metadata = pd.read_csv("resources/samples.meta.txt", sep="\t")
 

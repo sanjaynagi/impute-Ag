@@ -88,7 +88,9 @@ rule lowCovGenotypeLikelihoods:
         bam = whichBams(),
         index = lambda wildcards: whichBams() + ".bai",
         vcf = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz",
+	csi = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz.csi",
         tsv = "resources/ag1000g.phase2.{chrom}.sites.tsv.gz",
+	tvi = "resources/ag1000g.phase2.{chrom}.sites.tsv.gz.tbi",
         ref = config['ref'],
     output:
         calls = "results/vcfs/{sample}.calls.{chrom}.vcf.gz"

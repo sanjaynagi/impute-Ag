@@ -5,6 +5,9 @@ samples: "config/samples.tsv"
 
 ref: "resources/reference/Anopheles-gambiae-PEST_CHROMOSOMES_AgamP4.fa"
 
+
+chroms: 'X'
+
 subsample:
   activate: True
   reads: 5560000

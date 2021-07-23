@@ -23,14 +23,14 @@ rule glimpseImputeLigate:
     input:
         vcf = "results/vcfs/merged_calls.{chrom}.vcf.gz",
         index = "results/vcfs/merged_calls.{chrom}.vcf.gz.csi",
-        HapPanel = "/home/sanj/ag1000g/data/ag1000g.phase2.ar1.pass/ag1000g.phase2.ar1.pass.{chrom}.vcf.gz",
+        HapPanel = "resources/ag1000g.phase2.ar1.pass.biallelic.{chrom}.vcf.gz",
         genMap = "resources/geneticMaps/{chrom}.gmap",
         chunks = "resources/chunks.{chrom}.txt"
     output:
         vcf = "results/vcfs/imputed.{chrom}.vcf.gz"
     log:
         "logs/glimpseImputeLigate/{chrom}.log"
-    threads: 4
+    threads: 24
     shell:
         """
         workflow/scripts/glimpsePhaseLigate.sh {wildcards.chrom} {input.vcf} {input.HapPanel} {input.genMap} {input.chunks} {threads} 2> {log}
@@ -46,7 +46,7 @@ rule glimpsePhase:
     threads: 4
     shell:
         """
-        workflow/scripts/GLIMPSE/static_bins/GLIMPSE_sample_static --input {input.vcf} --solve --threads {threads} --output {output.phasedVCF} 2> {log}
+        workflow/scripts/GLIMPSE/static_bins/GLIMPSE_sample_static --input {input.vcf} --solve --thread {threads} --output {output.phasedVCF} 2> {log}
         """
 
 

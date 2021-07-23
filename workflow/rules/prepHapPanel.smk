@@ -21,7 +21,7 @@ rule extractSites:
     Extract variable sites from the Haplotype reference panel
     """
     input:
-        "/home/sanj/ag1000g/data/ag1000g.phase2.ar1.pass/ag1000g.phase2.ar1.pass.{chrom}.vcf.gz"
+        "resources/ag1000g.phase2.ar1.pass.biallelic.{chrom}.vcf.gz"
     output:
         "resources/ag1000g.phase2.{chrom}.sites.vcf.gz"
     log:
