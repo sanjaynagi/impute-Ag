@@ -21,13 +21,13 @@ rule glimpseImputeLigate:
     Run imputation and phasing algorithm
     """
     input:
-        vcf = "results/{dataset}VCFs`/merged_calls.{chrom}.vcf.gz",
-        index = "results/{dataset}VCFs`/merged_calls.{chrom}.vcf.gz.csi",
+        vcf = "results/vcfs/merged_calls.{chrom}.vcf.gz",
+        index = "results/vcfs/merged_calls.{chrom}.vcf.gz.csi",
         HapPanel = config['ag3']['vcf'],
         genMap = "resources/geneticMaps/{chrom}.gmap",
         chunks = "resources/chunks.{chrom}.txt"
     output:
-        vcf = "results/{dataset}VCFs/imputed.{chrom}.vcf.gz"
+        vcf = "results/vcfs/imputed.{chrom}.vcf.gz"
     log:
         "logs/glimpseImputeLigate/{chrom}_{dataset}.log"
     threads: 24
@@ -38,9 +38,9 @@ rule glimpseImputeLigate:
 
 rule glimpsePhase:
     input:
-        vcf = "results/{dataset}VCFs/imputed.{dataset}.{chrom}.vcf.gz"
+        vcf = "results/vcfs/imputed.{dataset}.{chrom}.vcf.gz"
     output:
-        phasedVCF = "results/{dataset}VCFs`/phased.{chrom}.vcf.gz"
+        phasedVCF = "results/vcfs/phased.{chrom}.vcf.gz"
     log:
         "logs/glimpseHaplotypes.{chrom}_{dataset}.log"
     threads: 4

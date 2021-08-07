@@ -93,7 +93,7 @@ rule lowCovGenotypeLikelihoods:
         tbi = "resources/ag3.{chrom}.sites.tsv.gz.tbi",
         ref = config['ref'],
     output:
-        calls = "results/{dataset}VCFs/{sample}.calls.{chrom}.vcf.gz"
+        calls = "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
     log:
         mpileup = "logs/mpileup/{sample}_{chrom}_{dataset}.log",
         call = "logs/bcftoolsCall/{sample}_{chrom}_{dataset}.log"
@@ -106,9 +106,9 @@ rule lowCovGenotypeLikelihoods:
 
 rule indexVCFs:
      input:
-        "results/{dataset}VCFs/{sample}.calls.{chrom}.vcf.gz"
+        "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
      output:
-        "results/{dataset}VCFs/{sample}.calls.{chrom}.vcf.gz.csi"
+        "results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi"
      log:
         "logs/indexVCFs/{sample}_{chrom}_{dataset}.log"
      shell:
@@ -120,7 +120,7 @@ rule mergeVCFs:
         expand("results/{{dataset}}VCFs/{sample}.calls.{{chrom}}.vcf.gz", sample=samples),
         expand("results/{{dataset}}VCFs/{sample}.calls.{{chrom}}.vcf.gz.csi", sample=samples)
      output:
-        "results/{dataset}VCFs/merged_calls.{chrom}.vcf.gz"
+        "results/vcfs/merged_calls.{chrom}.vcf.gz"
      log:
         "logs/mergeVCFs/{chrom}_{dataset}.log"
      shell:
@@ -131,9 +131,9 @@ rule mergeVCFs:
 
 rule indexMergedVCFs:
      input:
-        "results/{dataset}VCFs/merged_calls.{chrom}.vcf.gz"
+        "results/vcfs/merged_calls.{chrom}.vcf.gz"
      output:
-        "results/{dataset}VCFs/merged_calls.{chrom}.vcf.gz.csi"
+        "results/vcfs/merged_calls.{chrom}.vcf.gz.csi"
      log:
         "logs/indexMergedVCFs/{chrom}_{dataset}.log"
      shell:
