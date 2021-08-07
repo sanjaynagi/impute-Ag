@@ -19,7 +19,7 @@ rule alignBWA:
     """
     input:
         reads = expand("resources/reads/{{sample}}_{n}.fq.gz", n=[1,2]),
-        ref = lambda wildcards: config['ref'],
+        ref = config['ref'],
         idx = "resources/reference/.bwa.index"
     output:
         bam = "results/alignments/{sample}.bam"
@@ -88,9 +88,9 @@ rule lowCovGenotypeLikelihoods:
         bam = whichBams(),
         index = lambda wildcards: whichBams() + ".bai",
         vcf = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz",
-	csi = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz.csi",
+        csi = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz.csi",
         tsv = "resources/ag1000g.phase2.{chrom}.sites.tsv.gz",
-	tvi = "resources/ag1000g.phase2.{chrom}.sites.tsv.gz.tbi",
+        tbi = "resources/ag1000g.phase2.{chrom}.sites.tsv.gz.tbi",
         ref = config['ref'],
     output:
         calls = "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
@@ -118,7 +118,7 @@ rule indexVCFs:
 rule mergeVCFs:
      input:
         expand("results/vcfs/{sample}.calls.{{chrom}}.vcf.gz", sample=samples),
-	expand("results/vcfs/{sample}.calls.{{chrom}}.vcf.gz.csi", sample=samples)
+        expand("results/vcfs/{sample}.calls.{{chrom}}.vcf.gz.csi", sample=samples)
      output:
         "results/vcfs/merged_calls.{chrom}.vcf.gz"
      log:

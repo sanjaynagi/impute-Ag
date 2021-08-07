@@ -4,7 +4,7 @@
  #   Subset the reference panel to a specific set of samples. Only necessary to save space - runtime should be lower with larger Hap Panel
  #   """
   #  input:
-  #      vcf = "/home/sanj/ag1000g/data/ag1000g.phase2.ar1.pass/ag1000g.phase2.ar1.pass.{chrom}.vcf.gz"
+  #      vcf = "/home/sanj/ag1000g/data/ag3.ar1.pass/ag3.ar1.pass.{chrom}.vcf.gz"
 #    output:
 #        "resources/ag1000g_WestAfrica_col_{chrom}.vcf.gz"
 #    log:
@@ -21,9 +21,9 @@ rule extractSites:
     Extract variable sites from the Haplotype reference panel
     """
     input:
-        "resources/ag1000g.phase2.ar1.pass.biallelic.{chrom}.vcf.gz"
+        config['ag3']['vcf']
     output:
-        "resources/ag1000g.phase2.{chrom}.sites.vcf.gz"
+        "resources/ag3.{chrom}.sites.vcf.gz"
     log:
         "logs/extractSites.{chrom}.log"
     shell:
@@ -33,9 +33,9 @@ rule extractSites:
 
 rule indexSites:
      input:
-        vcf="resources/ag1000g.phase2.{chrom}.sites.vcf.gz"
+        vcf="resources/ag3.{chrom}.sites.vcf.gz"
      output:
-        csi="resources/ag1000g.phase2.{chrom}.sites.vcf.gz.csi"
+        csi="resources/ag3.{chrom}.sites.vcf.gz.csi"
      log:
         "logs/indexSites.{chrom}.log"
      shell:
@@ -46,10 +46,10 @@ rule sitesTable:
     Convert sites VCF to a TSV
     """
     input:
-        vcf="resources/ag1000g.phase2.{chrom}.sites.vcf.gz",
-        csi="resources/ag1000g.phase2.{chrom}.sites.vcf.gz.csi"
+        vcf="resources/ag3.{chrom}.sites.vcf.gz",
+        csi="resources/ag3.{chrom}.sites.vcf.gz.csi"
     output:
-        tsv="resources/ag1000g.phase2.{chrom}.sites.tsv.gz"
+        tsv="resources/ag3.{chrom}.sites.tsv.gz"
     log:
         "logs/sitesTable.{chrom}.log"
     shell:
@@ -59,9 +59,9 @@ rule sitesTable:
 
 rule tabixTable:
     input:
-        tsv="resources/ag1000g.phase2.{chrom}.sites.tsv.gz"
+        tsv="resources/ag3.{chrom}.sites.tsv.gz"
     output:
-        tbi="resources/ag1000g.phase2.{chrom}.sites.tsv.gz.tbi",
+        tbi="resources/ag3.{chrom}.sites.tsv.gz.tbi",
     log:
         "logs/tabixTable.{chrom}.log"
     shell:
