@@ -29,7 +29,7 @@ rule glimpseImputeLigate:
     output:
         vcf = "results/vcfs/imputed.{chrom}.vcf.gz"
     log:
-        "logs/glimpseImputeLigate/{chrom}_{dataset}.log"
+        "logs/glimpseImputeLigate/{chrom}.log"
     threads: 24
     shell:
         """
@@ -42,7 +42,7 @@ rule glimpsePhase:
     output:
         phasedVCF = "results/vcfs/phased.{chrom}.vcf.gz"
     log:
-        "logs/glimpseHaplotypes.{chrom}_{dataset}.log"
+        "logs/glimpseHaplotypes.{chrom}.log"
     threads: 4
     shell:
         """

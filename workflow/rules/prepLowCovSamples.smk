@@ -95,8 +95,8 @@ rule lowCovGenotypeLikelihoods:
     output:
         calls = "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
     log:
-        mpileup = "logs/mpileup/{sample}_{chrom}_{dataset}.log",
-        call = "logs/bcftoolsCall/{sample}_{chrom}_{dataset}.log"
+        mpileup = "logs/mpileup/{sample}_{chrom}.log",
+        call = "logs/bcftoolsCall/{sample}_{chrom}.log"
     shell:
         """
         bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r {wildcards.chrom} {input.bam} 2> {log.mpileup} |
@@ -110,19 +110,19 @@ rule indexVCFs:
      output:
         "results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi"
      log:
-        "logs/indexVCFs/{sample}_{chrom}_{dataset}.log"
+        "logs/indexVCFs/{sample}_{chrom}.log"
      shell:
         "bcftools index {input} 2> {log}"
 
 
 rule mergeVCFs:
      input:
-        expand("results/{{dataset}}VCFs/{sample}.calls.{{chrom}}.vcf.gz", sample=samples),
-        expand("results/{{dataset}}VCFs/{sample}.calls.{{chrom}}.vcf.gz.csi", sample=samples)
+        expand("results/vcfs/{sample}.calls.{{chrom}}.vcf.gz", sample=samples),
+        expand("results/vcfs/{sample}.calls.{{chrom}}.vcf.gz.csi", sample=samples)
      output:
         "results/vcfs/merged_calls.{chrom}.vcf.gz"
      log:
-        "logs/mergeVCFs/{chrom}_{dataset}.log"
+        "logs/mergeVCFs/{chrom}.log"
      shell:
         """
         find results/{wildcards.dataset}VCFs/ -name *calls.{wildcards.chrom}.vcf.gz | sort > results/{wildcards.dataset}VCFs/sampleVCF.{wildcards.chrom}.list 2> {log}
@@ -135,6 +135,6 @@ rule indexMergedVCFs:
      output:
         "results/vcfs/merged_calls.{chrom}.vcf.gz.csi"
      log:
-        "logs/indexMergedVCFs/{chrom}_{dataset}.log"
+        "logs/indexMergedVCFs/{chrom}.log"
      shell:
         "bcftools index {input} 2> {log}"
