@@ -49,7 +49,7 @@ rule indexBams:
 
 rule subSampleBam:
     """
-    Rule that downsamples a bam file to a required number of reads
+    Rule that downsamples a bam file to a required number of reads, if less reads then dont try and downsample
     """
     input:
         bam = "results/alignments/{sample}.bam"
@@ -87,16 +87,16 @@ rule lowCovGenotypeLikelihoods:
     input:
         bam = whichBams(),
         index = lambda wildcards: whichBams() + ".bai",
-        vcf = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz",
-        csi = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz.csi",
-        tsv = "resources/ag1000g.phase2.{chrom}.sites.tsv.gz",
-        tbi = "resources/ag1000g.phase2.{chrom}.sites.tsv.gz.tbi",
+        vcf = "resources/ag3.{chrom}.sites.vcf.gz",
+        csi = "resources/ag3.{chrom}.sites.vcf.gz.csi",
+        tsv = "resources/ag3.{chrom}.sites.tsv.gz",
+        tbi = "resources/ag3.{chrom}.sites.tsv.gz.tbi",
         ref = config['ref'],
     output:
-        calls = "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
+        calls = "results/{dataset}VCFs/{sample}.calls.{chrom}.vcf.gz"
     log:
-        mpileup = "logs/mpileup/{sample}_{chrom}.log",
-        call = "logs/bcftoolsCall/{sample}_{chrom}.log"
+        mpileup = "logs/mpileup/{sample}_{chrom}_{dataset}.log",
+        call = "logs/bcftoolsCall/{sample}_{chrom}_{dataset}.log"
     shell:
         """
         bcftools mpileup -Ou -f {input.ref} -I -E -a 'FORMAT/DP' -T {input.vcf} -r {wildcards.chrom} {input.bam} 2> {log.mpileup} |
@@ -106,35 +106,35 @@ rule lowCovGenotypeLikelihoods:
 
 rule indexVCFs:
      input:
-        "results/vcfs/{sample}.calls.{chrom}.vcf.gz"
+        "results/{dataset}VCFs/{sample}.calls.{chrom}.vcf.gz"
      output:
-        "results/vcfs/{sample}.calls.{chrom}.vcf.gz.csi"
+        "results/{dataset}VCFs/{sample}.calls.{chrom}.vcf.gz.csi"
      log:
-        "logs/indexVCFs/{sample}_{chrom}.log"
+        "logs/indexVCFs/{sample}_{chrom}_{dataset}.log"
      shell:
         "bcftools index {input} 2> {log}"
 
 
 rule mergeVCFs:
      input:
-        expand("results/vcfs/{sample}.calls.{{chrom}}.vcf.gz", sample=samples),
-        expand("results/vcfs/{sample}.calls.{{chrom}}.vcf.gz.csi", sample=samples)
+        expand("results/{{dataset}}VCFs/{sample}.calls.{{chrom}}.vcf.gz", sample=samples),
+        expand("results/{{dataset}}VCFs/{sample}.calls.{{chrom}}.vcf.gz.csi", sample=samples)
      output:
-        "results/vcfs/merged_calls.{chrom}.vcf.gz"
+        "results/{dataset}VCFs/merged_calls.{chrom}.vcf.gz"
      log:
-        "logs/mergeVCFs/{chrom}.log"
+        "logs/mergeVCFs/{chrom}_{dataset}.log"
      shell:
         """
-        find results/vcfs/ -name *calls.{wildcards.chrom}.vcf.gz | sort > results/vcfs/sampleVCF.{wildcards.chrom}.list 2> {log}
-        bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l results/vcfs/sampleVCF.{wildcards.chrom}.list 2>> {log}
+        find results/{wildcards.dataset}VCFs/ -name *calls.{wildcards.chrom}.vcf.gz | sort > results/{wildcards.dataset}VCFs/sampleVCF.{wildcards.chrom}.list 2> {log}
+        bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l results/{wildcards.dataset}VCFs/sampleVCF.{wildcards.chrom}.list 2>> {log}
         """
 
 rule indexMergedVCFs:
      input:
-        "results/vcfs/merged_calls.{chrom}.vcf.gz"
+        "results/{dataset}VCFs/merged_calls.{chrom}.vcf.gz"
      output:
-        "results/vcfs/merged_calls.{chrom}.vcf.gz.csi"
+        "results/{dataset}VCFs/merged_calls.{chrom}.vcf.gz.csi"
      log:
-        "logs/indexMergedVCFs/{chrom}.log"
+        "logs/indexMergedVCFs/{chrom}_{dataset}.log"
      shell:
         "bcftools index {input} 2> {log}"

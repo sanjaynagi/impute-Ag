@@ -5,7 +5,7 @@ rule glimpseChunk:
     Divide the genome into chunks
     """
     input:
-        sites = "resources/ag1000g.phase2.{chrom}.sites.vcf.gz",
+        sites = "resources/ag3.{chrom}.sites.vcf.gz",
     output:
         chunks = "resources/chunks.{chrom}.txt"
     log:
@@ -21,28 +21,28 @@ rule glimpseImputeLigate:
     Run imputation and phasing algorithm
     """
     input:
-        vcf = "results/vcfs/merged_calls.{chrom}.vcf.gz",
-        index = "results/vcfs/merged_calls.{chrom}.vcf.gz.csi",
-        HapPanel = "resources/ag1000g.phase2.ar1.pass.biallelic.{chrom}.vcf.gz",
+        vcf = "results/{dataset}VCFs`/merged_calls.{chrom}.vcf.gz",
+        index = "results/{dataset}VCFs`/merged_calls.{chrom}.vcf.gz.csi",
+        HapPanel = config['ag3']['vcf'],
         genMap = "resources/geneticMaps/{chrom}.gmap",
         chunks = "resources/chunks.{chrom}.txt"
     output:
-        vcf = "results/vcfs/imputed.{chrom}.vcf.gz"
+        vcf = "results/{dataset}VCFs/imputed.{chrom}.vcf.gz"
     log:
-        "logs/glimpseImputeLigate/{chrom}.log"
+        "logs/glimpseImputeLigate/{chrom}_{dataset}.log"
     threads: 24
     shell:
         """
-        workflow/scripts/glimpsePhaseLigate.sh {wildcards.chrom} {input.vcf} {input.HapPanel} {input.genMap} {input.chunks} {threads} 2> {log}
+        workflow/scripts/glimpsePhaseLigate.sh {wildcards.chrom} {input.vcf} {input.HapPanel} {input.genMap} {input.chunks} {threads} {wildcards.dataset} 2> {log}
         """
 
 rule glimpsePhase:
     input:
-        vcf = "results/vcfs/imputed.{chrom}.vcf.gz"
+        vcf = "results/{dataset}VCFs/imputed.{dataset}.{chrom}.vcf.gz"
     output:
-        phasedVCF = "results/vcfs/phased.{chrom}.vcf.gz"
+        phasedVCF = "results/{dataset}VCFs`/phased.{chrom}.vcf.gz"
     log:
-        "logs/glimpseHaplotypes.{chrom}.log"
+        "logs/glimpseHaplotypes.{chrom}_{dataset}.log"
     threads: 4
     shell:
         """
