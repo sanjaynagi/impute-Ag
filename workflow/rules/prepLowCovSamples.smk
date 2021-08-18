@@ -125,8 +125,8 @@ rule mergeVCFs:
         "logs/mergeVCFs/{chrom}.log"
      shell:
         """
-        find results/{wildcards.dataset}VCFs/ -name *calls.{wildcards.chrom}.vcf.gz | sort > results/{wildcards.dataset}VCFs/sampleVCF.{wildcards.chrom}.list 2> {log}
-        bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l results/{wildcards.dataset}VCFs/sampleVCF.{wildcards.chrom}.list 2>> {log}
+        find results/vcfs/ -name *calls.{wildcards.chrom}.vcf.gz | sort > results/vcfs/sampleVCF.{wildcards.chrom}.list 2> {log}
+        bcftools merge -m none -r {wildcards.chrom} -Oz -o {output} -l results/vcfs/sampleVCF.{wildcards.chrom}.list 2>> {log}
         """
 
 rule indexMergedVCFs:

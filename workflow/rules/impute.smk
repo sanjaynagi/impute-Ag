@@ -6,6 +6,7 @@ rule glimpseChunk:
     """
     input:
         sites = "resources/ag3.{chrom}.sites.vcf.gz",
+        csi= "resources/ag3.{chrom}.sites.vcf.gz.csi"
     output:
         chunks = "resources/chunks.{chrom}.txt"
     log:
@@ -24,6 +25,7 @@ rule glimpseImputeLigate:
         vcf = "results/vcfs/merged_calls.{chrom}.vcf.gz",
         index = "results/vcfs/merged_calls.{chrom}.vcf.gz.csi",
         HapPanel = config['ag3']['vcf'],
+        HapPanelIndex = config['ag3']['vcf'] + ".csi", 
         genMap = "resources/geneticMaps/{chrom}.gmap",
         chunks = "resources/chunks.{chrom}.txt"
     output:
@@ -33,12 +35,12 @@ rule glimpseImputeLigate:
     threads: 24
     shell:
         """
-        workflow/scripts/glimpsePhaseLigate.sh {wildcards.chrom} {input.vcf} {input.HapPanel} {input.genMap} {input.chunks} {threads} {wildcards.dataset} 2> {log}
+        workflow/scripts/glimpsePhaseLigate.sh {wildcards.chrom} {input.vcf} {input.HapPanel} {input.genMap} {input.chunks} {threads} 2> {log}
         """
 
 rule glimpsePhase:
     input:
-        vcf = "results/vcfs/imputed.{dataset}.{chrom}.vcf.gz"
+        vcf = "results/vcfs/imputed.{chrom}.vcf.gz"
     output:
         phasedVCF = "results/vcfs/phased.{chrom}.vcf.gz"
     log:

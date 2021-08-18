@@ -9,7 +9,7 @@ ag3:
   vcf: "resources/ag3_gamb_colu_{chrom}_phased.vcf.gz"
   metadata: 
 
-chroms: 'X'
+chroms: ['X', '2L']
 
 subsample:
   activate: True

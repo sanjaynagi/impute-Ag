@@ -12,14 +12,14 @@ do
 printf -v ID "%02d" $(echo $LINE | cut -d" " -f1)
 IRG=$(echo $LINE | cut -d" " -f3)
 ORG=$(echo $LINE | cut -d" " -f4)
-OUT="results/vcfs/imputed.${CHROM}.${ID}.vcf"
+OUT="results/vcfs/imputed.${CHROM}.${ID}.bcf"
 
 workflow/scripts/GLIMPSE/static_bins/GLIMPSE_phase_static --input ${VCF} --reference ${REF} --map ${MAP} --input-region ${IRG} --output-region ${ORG} --output ${OUT} --thread ${THREADS}
 
 bcftools index ${OUT}
 done < $CHUNK
 
-find results/vcfs/ -name "imputed.${CHROM}*.vcf" | sort > results/$vcfs/${CHROM}.vcf.list
+find results/vcfs/ -name "imputed.${CHROM}*.bcf" | sort > results/vcfs/${CHROM}.vcf.list
 
 echo "Imputation complete..."
 

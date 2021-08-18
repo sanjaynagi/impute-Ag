@@ -16,6 +16,17 @@
 #        "bcftools view -Ov -S {params.samples} {input.vcf} 2> {log.view} | bcftools annotate -x INFO -Oz -o {output} 2> {log.anno}"
 
 
+rule indexHapPanel:
+     input:
+        vcf=config['ag3']['vcf']
+     output:
+        csi=config['ag3']['vcf'] + ".csi"
+     log:
+        "logs/indexHapPanel.{chrom}.log"
+     shell:
+        "bcftools index {input} 2> {log}"
+
+
 rule extractSites:
     """
     Extract variable sites from the Haplotype reference panel
