@@ -2,7 +2,7 @@
 # In case of sample based data, it should be complemented by a samples.tsv file that contains
 # one row per sample. It can be parsed easily via pandas.
 dataset: "GhanaJE"
-samples: "config/samples.tsv"
+samples: "config/GhanaLowCov.metadata.tsv"
 
 ref: "resources/reference/Anopheles-gambiae-PEST_CHROMOSOMES_AgamP4.fa"
 ag3:
@@ -15,3 +15,8 @@ subsample:
   activate: True
   reads: 5560000
 
+validate:
+  activate: False
+  samplesRemove:
+    - "AA0039-C"
+    - "AA0040-C"

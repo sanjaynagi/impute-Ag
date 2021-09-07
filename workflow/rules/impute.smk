@@ -24,8 +24,8 @@ rule glimpseImputeLigate:
     input:
         vcf = "results/vcfs/merged_calls.{chrom}.vcf.gz",
         index = "results/vcfs/merged_calls.{chrom}.vcf.gz.csi",
-        HapPanel = config['ag3']['vcf'],
-        HapPanelIndex = config['ag3']['vcf'] + ".csi", 
+        HapPanel = "resources/ag3.validation.vcf" if config['validate']['activate'] else config['ag3']['vcf'],
+        HapPanelIndex = "resources/ag3.validation.vcf" + ".csi" if config['validate']['activate'] else config['ag3']['vcf'] + ".csi", 
         genMap = "resources/geneticMaps/{chrom}.gmap",
         chunks = "resources/chunks.{chrom}.txt"
     output:

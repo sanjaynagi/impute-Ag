@@ -3,24 +3,23 @@ import pandas as pd
 import numpy as np
 configfile: "config/config.yaml"
 
-#chroms = ['2L', '2R', '3L', '3R', 'X']
-chroms = config['chroms']
+# Phase 3 metadata
+metadata = pd.read_csv("resources/Ag1000g.phase3.manifest.full.tsv", sep="\t")
 
-metadata = pd.read_csv("resources/samples.meta.txt", sep="\t")
-
-lowCovMeta = pd.read_csv("config/GhanaLowCov.metadata.tsv", sep="\t")
+# Low Cov metadata
+lowCovMeta = pd.read_csv(config['samples'], sep="\t")
 bool_ = lowCovMeta['Site'].isin(['Asokwa', 'Bantama-Kumasi', 'Manso-Nkwanta'])
 samples = lowCovMeta['sample'][~bool_][:50]
 
-# IR allele balance mutations file
-mutationData = pd.read_csv("resources/coemutations.tsv", sep="\t")
 
 rule all:
     input:
      #   expand("results/alignments/coverage/{sample}.mosdepth.summary.txt", sample=samples),
 #        expand("resources/ag1000g.phase2.{chrom}.sites.tsv.gz.tbi", chrom=chroms)
-        expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=chroms),
-        expand("results/vcfs/phased.{chrom}.vcf.gz", chrom=chroms)
+        expand("results/vcfs/merged_calls.{chrom}.vcf.gz", chrom=config['chroms']),
+        expand("results/vcfs/phased.{chrom}.vcf.gz", chrom=config['chroms']),
+        "results/ag3.validation.vcf" if config['validate'] else []
+
 
 include: "rules/common.smk"
 include: "rules/prepHapPanel.smk"

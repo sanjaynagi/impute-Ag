@@ -27,12 +27,43 @@ rule indexHapPanel:
         "bcftools index {input} 2> {log}"
 
 
+rule validationHapPanel:
+    input:
+        vcf = config['ag3']['vcf']
+    output:
+        vcf = "resources/ag3.validation.vcf"
+    log:
+        "logs/validationHap.log"
+    params:
+        validationSamples = config['validate']['samplesRemove']
+    threads: 8
+    shell:
+        """
+        bcftools norm -m -any {input.vcf} -Ou --threads {threads} | 
+        bcftools view -m 2 -m 2 -v snps -s ^{params.validationSamples} --threads {threads} -Ob -o {output.vcf}
+        bcftools index -f {output.vcf} --threads {threads}
+        """
+
+rule validationSampleVCF:
+    input:
+        vcf=config['ag3']['vcf']
+    output:
+        vcf= "results/ag3.validation.vcf.gz"
+    log:
+        "logs/validationVCF.log"
+    params:
+        validationSamples = config['validate']['samplesRemove']
+    shell:
+        """
+        bcftools view -S {params.validationSamples} {input.vcf} -Oz -o {output.vcf} 2> {log}
+        """
+
 rule extractSites:
     """
     Extract variable sites from the Haplotype reference panel
     """
     input:
-        config['ag3']['vcf']
+        "resources/ag3.validation.vcf" if config['validate']['activate'] else config['ag3']['vcf']
     output:
         "resources/ag3.{chrom}.sites.vcf.gz"
     log:
